@@ -2,7 +2,7 @@
 
 using namespace std;
 
-int GetFactorial(int n) {
+int Factorial(int n) {
     int f = 1;
     if (n < 2) {
         return f;
@@ -16,6 +16,6 @@ int GetFactorial(int n) {
 int main() {
     int n;
     cin >> n;
-    cout << GetFactorial(n);
+    cout << Factorial(n);
     return 0;
 }
