@@ -5,6 +5,12 @@
 
 using namespace std;
 
+string GetEmptyString() {
+    string s;
+    s.empty();
+    return s;
+}
+
 class Person {
 public:
     void ChangeFirstName(int year, const string& first_name) {
@@ -42,48 +48,89 @@ public:
         return (name_item + " " + last_name_item);
     }
     string GetFullNameWithHistory(int year) {
-        vector<string> history_names;
-        vector<string> history_last_names;
-        for (auto& item : name_this_year) {
+        vector<string> history_names = {};
+        vector<string> history_last_names = {};
+        string previous = "flag!";
+        for (auto &item: name_this_year) {
 
             if (item.first > year) {
                 break;
             }
-            if (history_names[history_names.size() - 2] != item.second){
+            if (previous != item.second) {
                 history_names.push_back(item.second);
             }
+            previous = item.second;
         }
-        for (auto& item : last_name_this_year) {
+        previous = "flag!";
+        for (auto &item: last_name_this_year) {
 
             if (item.first > year) {
                 break;
             }
-            if (history_last_names[history_last_names.size() - 2] != item.second){
+            if (previous != item.second) {
                 history_last_names.push_back(item.second);
             }
+            previous = item.second;
         }
         if (history_names.empty() && history_last_names.empty()) {
             return "Incognito";
-        }
-        else if (history_names.empty() && history_last_names.size() == 1) {
-            return history_last_names[0] + " with unknown first name";
-        }
-        else if (history_names.size() == 1 && history_last_names.empty()) {
-            return history_names[0] + " with unknown last name";
-        }
-        else if(history_names.size() == 1 && history_last_names.size() == 1) {
-            return (history_names[history_names.size()-1] + " " + history_last_names[history_last_names.size()-1]);
-        }
-        else if (history_names.empty() && history_last_names.size() > 1) {
-            string result = history_last_names[0];
-            return history_last_names[history_last_names.size() 1] + "(" + history_last_names + ")" + " with unknown first name";
+        } else if (history_names.empty() && history_last_names.size() > 0) {
+            return history_last_names[history_last_names.size() - 1] + GetStringHistoryLast(history_last_names) + " with unknown first name";
+        } else if (history_names.size() > 0 && history_last_names.empty()) {
+            return history_names[history_names.size() - 1] + GetStringHistory(history_names) + "with unknown last name";
+        } else if (history_names.size() > 0 && history_last_names.size() > 0) {
+            return history_names[history_names.size() - 1]  + GetStringHistory(history_names) +
+                   history_last_names[history_last_names.size() - 1] + GetStringHistoryLast(history_last_names);
         }
     }
 private:
     // приватные поля
     map<int, string> name_this_year;
     map<int, string> last_name_this_year;
+    string GetStringHistoryLast(const vector<string>& history_names) {
+        string result = "";
+        auto len = history_names.size();
+        if (len == 0) {
+            return result;
+        }
+        else {
+            for (auto i = 1; i < len; ++i) {
+                if (i == 1) {
+                    result += " (";
+                }
+                result += history_names[len - i - 1];
+                if (i == (len - 1)) {
+                    result += ")";
+                } else {
+                    result += ", ";
+                }
+            }
+        }
+        return result;
+    }
+    string GetStringHistory(const vector<string>& history_names) {
+        string result = " ";
+        auto len = history_names.size();
+        if (len == 0) {
+            return result;
+        }
+        else {
+            for (auto i = 1; i < len; ++i) {
+                if (i == 1) {
+                    result += "(";
+                }
+                result += history_names[len - i - 1];
+                if (i == (len - 1)) {
+                    result += ") ";
+                } else {
+                    result += ", ";
+                }
+            }
+        }
+        return result;
+    }
 };
+
 
 int main() {
     Person person;
@@ -91,18 +138,33 @@ int main() {
     person.ChangeFirstName(1965, "Polina");
     person.ChangeLastName(1967, "Sergeeva");
     for (int year : {1900, 1965, 1990}) {
-        cout << person.GetFullName(year) << endl;
+        cout << person.GetFullNameWithHistory(year) << endl;
     }
 
     person.ChangeFirstName(1970, "Appolinaria");
     for (int year : {1969, 1970}) {
-        cout << person.GetFullName(year) << endl;
+        cout << person.GetFullNameWithHistory(year) << endl;
     }
 
     person.ChangeLastName(1968, "Volkova");
     for (int year : {1969, 1970}) {
-        cout << person.GetFullName(year) << endl;
+        cout << person.GetFullNameWithHistory(year) << endl;
     }
+
+    person.ChangeFirstName(1990, "Polina");
+    person.ChangeLastName(1990, "Volkova-Sergeeva");
+    cout << person.GetFullNameWithHistory(1990) << endl;
+
+    person.ChangeFirstName(1966, "Pauline");
+    cout << person.GetFullNameWithHistory(1966) << endl;
+
+    person.ChangeLastName(1960, "Sergeeva");
+    for (int year : {1960, 1967}) {
+        cout << person.GetFullNameWithHistory(year) << endl;
+    }
+
+    person.ChangeLastName(1961, "Ivanova");
+    cout << person.GetFullNameWithHistory(1967) << endl;
 
     return 0;
 }
