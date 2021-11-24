@@ -6,7 +6,7 @@ using namespace std;
 
 class ReversibleString {
 public:
-    ReversibleString() {};
+    ReversibleString() {}
     ReversibleString(const string& s) {
        str = s;
     }
