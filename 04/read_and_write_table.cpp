@@ -7,19 +7,22 @@
 using namespace std;
 
 int main() {
-     fstream input("/home/user/CLionProjects/cpp_white/04/input.txt");
-     int N;
-     int M;
-     input >> N >> M;
-     input.ignore(1);
-     vector<string> values(M);
-     for (int i = 0; i < M; ++i) {
-
-     }
-     input.ignore(1);
-
-     for (const string& s : values) {
-         cout << s << " " << endl;
-     }
+    fstream input("/Users/fenik/CLionProjects/cpp_white/04/input.txt");
+    if (input) {
+        string N;
+        string M;
+        getline(input, N);
+        getline(input, M);
+        int N_int = stoi(N);
+        int M_int = stoi(M);
+        vector<string> values(M_int);
+        for (int i = 0; i < N_int; ++i) {
+            for (int j = 0; j < M_int; ++j) {
+                string value;
+                getline(input, values[j], ',');
+                cout << setw(10) << values[j] << " ";
+            }
+        }
+    }
     return 0;
 }
