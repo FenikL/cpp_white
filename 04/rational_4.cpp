@@ -2,7 +2,6 @@
 #include <numeric>
 #include <cmath>
 #include <sstream>
-#include <iomanip>
 
 using namespace std;
 
@@ -59,7 +58,7 @@ Rational operator/(const Rational& left, const Rational& right) {
 }
 
 bool operator==(const Rational& left, const Rational& right) {
-    return  (left.Numerator() == right.Numerator()) && (left.Denominator()==right.Denominator());
+    return  (left.Numerator() == right.Numerator()) && (left.Denominator() == right.Denominator());
 }
 
 ostream& operator<<(ostream& stream, const Rational& rational) {
