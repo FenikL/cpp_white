@@ -14,12 +14,12 @@ public:
         if (new_month > 0 && new_month < 13) {
             month = new_month;
         } else {
-            throw month;
+            throw logic_error("Month value is invalid: " + to_string(new_month));
         }
         if (new_day > 0 && new_day < 32) {
             day = new_day;
         } else {
-            throw day;
+            throw logic_error("Day value is invalid: " + to_string(new_day));
         }
     }
     int GetYear() const {
@@ -47,13 +47,6 @@ bool operator<(const Date& lhs, const Date& rhs) {
     }
 }
 
-/*bool operator==(const Date& lhs, const Date& rhs) {
-    return (lhs.GetYear() == rhs.GetYear() &&
-            lhs.GetMonth() == rhs.GetMonth() &&
-            lhs.GetDay() == rhs.GetDay());
-}
- */
-
 ostream& operator<<(ostream& stream, const Date& date) {
     stream << setfill('0');
     stream << setw(4) << date.GetYear() << "-"
@@ -80,8 +73,9 @@ public:
       cout << endl;
   }
   void  DeleteDate(const Date& date) {
-      int N = events_in_year.count(date);
-      if (N != 0) {
+      int N = 0;
+      if (events_in_year.count(date) != 0) {
+          N = events_in_year[date].size();
           events_in_year.erase(date);
       }
       cout << "Deleted " << N << " events" << endl;
@@ -138,50 +132,25 @@ Command ParseCommand(const string& new_command) {
     return Command(request, date, event);
 }
 
-void EnsureNextSymbolAndSkip(stringstream& stream, const string& date) {
-    if (stream.peek() != '-') {
-        throw date;
-    }
-    stream.ignore(1);
-    if (stream.peek() != '-' &&
-        stream.peek() != '0' &&
-        stream.peek() != '1' &&
-        stream.peek() != '2' &&
-        stream.peek() != '3' &&
-        stream.peek() != '4' &&
-        stream.peek() != '5' &&
-        stream.peek() != '6' &&
-        stream.peek() != '7' &&
-        stream.peek() != '8' &&
-        stream.peek() != '9'){
-        throw date;
-    }
-    stream.get();
-    if (stream.peek() != '0' &&
-        stream.peek() != '1' &&
-        stream.peek() != '2' &&
-        stream.peek() != '3' &&
-        stream.peek() != '4' &&
-        stream.peek() != '5' &&
-        stream.peek() != '6' &&
-        stream.peek() != '7' &&
-        stream.peek() != '8' &&
-        stream.peek() != '9') {
-        throw date;
-    }
-    stream.unget();
-}
-
 Date ParseDate(const string& date) {
     stringstream stream(date);
-    int year;
-    int month;
-    int day;
+    int year= 99999991;
+    int month = 9999991;
+    int day = 99999991;
     stream >> year;
-    EnsureNextSymbolAndSkip(stream, date);
+    if (stream.peek() != '-' || stream.eof()) {
+        throw logic_error("Wrong date format: " + date);
+    }
+    stream.ignore(1);
     stream >> month;
-    EnsureNextSymbolAndSkip(stream, date);
+    if (stream.peek() != '-' || stream.eof()) {
+        throw logic_error("Wrong date format: " + date);
+    }
+    stream.ignore(1);
     stream >> day;
+    if (!stream.eof() || month == 9999991 || day == 99999991) {
+        throw logic_error("Wrong date format: " + date);
+    }
     return Date(year, month, day);
 }
 
@@ -190,25 +159,32 @@ int main() {
   Database db;
     
   string command;
-  while (getline(cin, command)) {
-      Command parsed_command = ParseCommand(command);
-      if (parsed_command.GetRequest() == "Add") {
-          Date parsed_date = ParseDate(parsed_command.GetDate());
-          db.AddEvent(parsed_date, parsed_command.GetEvent());
-      } else if (parsed_command.GetRequest() == "Del" && !parsed_command.GetEvent().empty()) {
-          Date parsed_date = ParseDate(parsed_command.GetDate());
-          db.DeleteEvent(parsed_date, parsed_command.GetEvent());
-      } else if (parsed_command.GetRequest() == "Del" && parsed_command.GetEvent().empty()) {
-          Date parsed_date = ParseDate(parsed_command.GetDate());
-          db.DeleteDate(parsed_date);
-      } else if (parsed_command.GetRequest() == "Find") {
-          Date parsed_date = ParseDate(parsed_command.GetDate());
-          db.Find(parsed_date);
-      } else if (parsed_command.GetRequest() == "Print") {
-          db.Print();
-      } else {
-          throw parsed_command.GetRequest();
+  try {
+      while (getline(cin, command)) {
+          Command parsed_command = ParseCommand(command);
+          if (parsed_command.GetRequest() == "Add") {
+              Date parsed_date = ParseDate(parsed_command.GetDate());
+              db.AddEvent(parsed_date, parsed_command.GetEvent());
+          } else if (parsed_command.GetRequest() == "Del" && !parsed_command.GetEvent().empty()) {
+              Date parsed_date = ParseDate(parsed_command.GetDate());
+              db.DeleteEvent(parsed_date, parsed_command.GetEvent());
+          } else if (parsed_command.GetRequest() == "Del" && parsed_command.GetEvent().empty()) {
+              Date parsed_date = ParseDate(parsed_command.GetDate());
+              db.DeleteDate(parsed_date);
+          } else if (parsed_command.GetRequest() == "Find") {
+              Date parsed_date = ParseDate(parsed_command.GetDate());
+              db.Find(parsed_date);
+          } else if (parsed_command.GetRequest() == "Print") {
+              db.Print();
+          } else if (parsed_command.GetRequest().empty()) {
+
+          } else {
+              throw logic_error("Unknown command: " + parsed_command.GetRequest());
+          }
       }
+  } catch (logic_error& le) {
+      cout << le.what();
+      return 0;
   }
 
   return 0;
